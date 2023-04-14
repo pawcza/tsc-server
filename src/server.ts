@@ -37,9 +37,6 @@ io.on("connection", async (socket: Socket) => {
     // Emit codes to the socket
     socket.emit("init", codes, user);
 
-    // @ts-ignore
-    console.log(JSON.parse(codes));
-
     // Handle on vote
     socket.on("vote", async (codeId, textId, inc) => {
         const _id = new ObjectId(codeId);
