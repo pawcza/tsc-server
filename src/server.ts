@@ -17,7 +17,7 @@ io.on("connection", async (socket: Socket) => {
     console.log(`Socket: ${socket.id} connected`);
 
     // DevMode
-    let devMode = false;
+    let devMode = true; // Change to false after fixing the IP block issue...
     socket.on("toggleDevMode", (bool) => {
         devMode = bool;
         console.log("DevMode is: ", bool);
