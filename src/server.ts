@@ -9,7 +9,7 @@ const client = new MongoClient(process.env["ATLAS_URI"]);
 
 const io = new Server(httpServer, {
     cors: {
-        origin: "http://localhost:8080"
+        origin: process.env.NODE_ENV === "production" ? "145.239.84.215:8080" : "http://localhost:8080"
     }
 });
 
@@ -36,6 +36,9 @@ io.on("connection", async (socket: Socket) => {
 
     // Emit codes to the socket
     socket.emit("init", codes, user);
+
+    // @ts-ignore
+    console.log(JSON.parse(codes));
 
     // Handle on vote
     socket.on("vote", async (codeId, textId, inc) => {
