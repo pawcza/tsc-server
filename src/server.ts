@@ -15,8 +15,6 @@ const io = new Server(httpServer, {
 
 io.on("connection", async (socket: Socket) => {
     console.log(`Socket: ${socket.id} connected`);
-    console.log(socket.handshake.headers["x-real-ip"]);
-    console.log(socket.handshake.headers["x-real-port"]);
 
     // DevMode
     let devMode = false;
@@ -28,7 +26,7 @@ io.on("connection", async (socket: Socket) => {
     // Initialize database connection
     const collection = client.db("tsc").collection("codes");
     const users = client.db("tsc").collection("users");
-    const ip = socket.conn.remoteAddress;
+    const ip = socket.handshake.headers["x-real-ip"];
 
     // Retrieve codes data
     const codes = await collection.find().toArray();
