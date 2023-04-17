@@ -19,7 +19,7 @@ io.on("connection", async (socket: Socket) => {
     console.log(socket.handshake.headers["x-real-port"]);
 
     // DevMode
-    let devMode = true; // Change to false after fixing the IP block issue...
+    let devMode = false;
     socket.on("toggleDevMode", (bool) => {
         devMode = bool;
         console.log("DevMode is: ", bool);
