@@ -26,7 +26,7 @@ io.on("connection", async (socket: Socket) => {
     // Initialize database connection
     const collection = client.db("tsc").collection("codes");
     const users = client.db("tsc").collection("users");
-    const ip = socket.handshake.headers["x-real-ip"];
+    const ip = socket.handshake.headers["x-real-ip"] || "::ffff:127.0.0.1";
 
     // Retrieve codes data
     const codes = await collection.find().toArray();
