@@ -15,6 +15,8 @@ const io = new Server(httpServer, {
 
 io.on("connection", async (socket: Socket) => {
     console.log(`Socket: ${socket.id} connected`);
+    console.dir(socket);
+    console.log(socket.client.conn.remoteAddress);
 
     // DevMode
     let devMode = true; // Change to false after fixing the IP block issue...
