@@ -15,8 +15,7 @@ const io = new Server(httpServer, {
 
 io.on("connection", async (socket: Socket) => {
     console.log(`Socket: ${socket.id} connected`);
-    console.dir(socket);
-    console.log(socket.client.conn.remoteAddress);
+    console.log(socket.conn.remoteAddress);
 
     // DevMode
     let devMode = true; // Change to false after fixing the IP block issue...
@@ -28,7 +27,7 @@ io.on("connection", async (socket: Socket) => {
     // Initialize database connection
     const collection = client.db("tsc").collection("codes");
     const users = client.db("tsc").collection("users");
-    const ip = socket.handshake.address;
+    const ip = socket.conn.remoteAddress;
 
     // Retrieve codes data
     const codes = await collection.find().toArray();
