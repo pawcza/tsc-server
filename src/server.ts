@@ -14,15 +14,6 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", async (socket: Socket) => {
-    console.log(`Socket: ${socket.id} connected`);
-
-    // DevMode
-    let devMode = false;
-    socket.on("toggleDevMode", (bool) => {
-        devMode = bool;
-        console.log("DevMode is: ", bool);
-    })
-
     // Initialize database connection
     const collection = client.db("tsc").collection("codes");
     const users = client.db("tsc").collection("users");
@@ -31,11 +22,34 @@ io.on("connection", async (socket: Socket) => {
     // Retrieve codes data
     const codes = await collection.find().toArray();
 
-    // Retrieve user
-    const user = await users.findOne({ip});
+    // Retrieve user or create one if it doesn't exist
+    const user = await users.findOneAndUpdate(
+        { ip },
+        {
+            $setOnInsert: {
+                _id: new ObjectId(),
+                ip,
+                codes: []
+            },
+        },
+        {
+            returnDocument: "after",
+            upsert: true,
+        });
+
+    // Log user data
+    console.log(`Socket: ${socket.id} connected, User IP: ${ip}`);
+
+    // DevMode
+    let devMode = false;
+    socket.on("toggleDevMode", (bool) => {
+        devMode = bool;
+        console.log(`DevMode is: ${bool} initiated by ${ip} on ${new Date()}`);
+    })
+
 
     // Emit codes to the socket
-    socket.emit("init", codes, user);
+    socket.emit("init", codes, user.value);
 
     // Handle on vote
     socket.on("vote", async (codeId, textId, inc) => {
