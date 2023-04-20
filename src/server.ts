@@ -38,7 +38,7 @@ io.on("connection", async (socket: Socket) => {
     socket.emit("init", codes, user);
 
     // Handle on vote
-    socket.on("vote", async (codeId, textId, inc, userId) => {
+    socket.on("vote", async (codeId, textId, inc) => {
         const _id = new ObjectId(codeId);
         const text_id = new ObjectId(textId);
         const user = await users.findOne({ip});
@@ -72,7 +72,7 @@ io.on("connection", async (socket: Socket) => {
                 await collection.updateOne({_id}, {$inc: {"totalVotes": inc ? 1 : currentVotes <= 0 ? 0 : -1}});
                 await users.updateOne({ip}, {$addToSet: {codes: codeId}}, {upsert: true});
                 const ignoreTotalVotes = (currentVotes == 0 && !inc) || (currentVotes <= -1);
-                io.emit("receiveVote", _id, text_id, inc, ignoreTotalVotes, userId);
+                io.emit("receiveVote", _id, text_id, inc, ignoreTotalVotes, user._id);
             }
         }
     });
@@ -90,7 +90,7 @@ io.on("connection", async (socket: Socket) => {
             const update = {$push: {texts: postObj}};
             await collection.updateOne(query, update);
             await users.updateOne({ip}, {$set: {added: true}}, {upsert: true});
-            io.emit("receivePost", _id, postObj, userId);
+            io.emit("receivePost", _id, postObj, user._id);
         }
     });
 
