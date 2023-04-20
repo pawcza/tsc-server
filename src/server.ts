@@ -13,6 +13,7 @@ const io = new Server(httpServer, {
     }
 });
 
+
 io.on("connection", async (socket: Socket) => {
     // Initialize database connection
     const collection = client.db("tsc").collection("codes");
@@ -23,19 +24,25 @@ io.on("connection", async (socket: Socket) => {
     const codes = await collection.find().toArray();
 
     // Retrieve user or create one if it doesn't exist
-    const user = await users.findOneAndUpdate(
-        { ip },
-        {
-            $setOnInsert: {
-                _id: new ObjectId(),
-                ip,
-                codes: []
+    const getUserData = async () => {
+        const result = await users.findOneAndUpdate(
+            { ip },
+            {
+                $setOnInsert: {
+                    _id: new ObjectId(),
+                    ip,
+                    codes: []
+                },
             },
-        },
-        {
-            returnDocument: "after",
-            upsert: true,
-        });
+            {
+                returnDocument: "after",
+                upsert: true,
+            });
+
+        return result.value;
+    }
+
+    const user = await getUserData();
 
     // Log user data
     console.log(`Socket: ${socket.id} connected, User IP: ${ip}`);
@@ -55,7 +62,7 @@ io.on("connection", async (socket: Socket) => {
     socket.on("vote", async (codeId, textId, inc) => {
         const _id = new ObjectId(codeId);
         const text_id = new ObjectId(textId);
-        const user = await users.findOne({ip});
+        const user = await getUserData();
 
         if (user?.codes?.includes(codeId) && !devMode) {
             // If this IP has already voted on that code...
