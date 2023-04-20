@@ -56,7 +56,11 @@ io.on("connection", async (socket: Socket) => {
 
 
     // Emit codes to the socket
-    socket.emit("init", codes, user);
+    const clientFacingUser = {
+        codes: user.codes,
+        _id: user._id
+    }
+    socket.emit("init", codes, clientFacingUser);
 
     // Handle on vote
     socket.on("vote", async (codeId, textId, inc) => {
