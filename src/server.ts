@@ -45,7 +45,7 @@ io.on("connection", async (socket: Socket) => {
     const user = await getUserData();
 
     // Log user data
-    console.log(`Socket: ${socket.id} connected, User IP: ${ip}`);
+    console.log(`Socket: ${socket.id} connected, User IP: ${ip}, Date: ${new Date()}`);
 
     // DevMode
     let devMode = false;
@@ -56,7 +56,7 @@ io.on("connection", async (socket: Socket) => {
 
 
     // Emit codes to the socket
-    socket.emit("init", codes, user.value);
+    socket.emit("init", codes, user);
 
     // Handle on vote
     socket.on("vote", async (codeId, textId, inc) => {
@@ -100,7 +100,7 @@ io.on("connection", async (socket: Socket) => {
 
     // Handle adding another text, only allow adding one text for one user
     socket.on("post", async (codeId, text, userId) => {
-        const user = await users.findOne({ip});
+        const user = await getUserData();
 
         if (user?.added && !devMode) {
             socket.emit("alreadyAdded");
@@ -115,21 +115,10 @@ io.on("connection", async (socket: Socket) => {
         }
     });
 
-    socket.on("delete", async (codeId, textId) => {
-        const _id = new ObjectId(codeId);
-        const text_id = new ObjectId(textId);
-        const query = {_id, "texts._id": text_id};
-        const update = {$pull: {texts : {_id: textId}}};
-        await collection.updateOne(query, update);
-        io.emit("receiveDelete", _id, text_id);
-    })
-
-
     // Development functions
     socket.on("clearUserData", async () => {
         await users.updateOne({ip}, {$set: {codes: [], added: false}});
     })
-
     socket.on("populateDb", async () => {
         let arr = [];
         for(let x = 400; x <= 499; ++x) {
@@ -146,22 +135,4 @@ io.on("connection", async (socket: Socket) => {
 });
 
 httpServer.listen(3000);
-
-// const init = async () => {
-//     for(let x = 400; x <=499; ++x) {
-//         await collection.insertOne({
-//             "_id": new ObjectId(),
-//             number: x,
-//             texts: [
-//                 {"_id": new ObjectId(), text: `Code ${x}`, votes: 1},
-//                 {"_id": new ObjectId(), text: `Code ${x}`, votes: 2},
-//                 {"_id": new ObjectId(), text: `Code ${x}`, votes: 3}
-//             ]
-//         });
-//     }
-// }
-//
-// init();
-
-
 
