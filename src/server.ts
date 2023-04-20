@@ -38,7 +38,7 @@ io.on("connection", async (socket: Socket) => {
     socket.emit("init", codes, user);
 
     // Handle on vote
-    socket.on("vote", async (codeId, textId, inc) => {
+    socket.on("vote", async (codeId, textId, inc, userId) => {
         const _id = new ObjectId(codeId);
         const text_id = new ObjectId(textId);
         const user = await users.findOne({ip});
@@ -72,13 +72,13 @@ io.on("connection", async (socket: Socket) => {
                 await collection.updateOne({_id}, {$inc: {"totalVotes": inc ? 1 : currentVotes <= 0 ? 0 : -1}});
                 await users.updateOne({ip}, {$addToSet: {codes: codeId}}, {upsert: true});
                 const ignoreTotalVotes = (currentVotes == 0 && !inc) || (currentVotes <= -1);
-                io.emit("receiveVote", _id, text_id, inc, ignoreTotalVotes);
+                io.emit("receiveVote", _id, text_id, inc, ignoreTotalVotes, userId);
             }
         }
     });
 
     // Handle adding another text, only allow adding one text for one user
-    socket.on("post", async (codeId, text) => {
+    socket.on("post", async (codeId, text, userId) => {
         const user = await users.findOne({ip});
 
         if (user?.added && !devMode) {
@@ -90,7 +90,7 @@ io.on("connection", async (socket: Socket) => {
             const update = {$push: {texts: postObj}};
             await collection.updateOne(query, update);
             await users.updateOne({ip}, {$set: {added: true}}, {upsert: true});
-            io.emit("receivePost", _id, postObj);
+            io.emit("receivePost", _id, postObj, userId);
         }
     });
 
